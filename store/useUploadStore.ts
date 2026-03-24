@@ -4,7 +4,8 @@ export interface UploadedFile {
   name: string;
   type: string;
   size: number;
-  nativeFile: File;
+  nativeFile?: File;
+  fetchedData?: string[];
 }
 
 interface UploadStore {

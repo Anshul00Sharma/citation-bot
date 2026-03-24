@@ -26,7 +26,7 @@ export default function SplitScreenView() {
       <div className="upload-section upload-section-shifted">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%', height: '100%' }}>
           {file.type === "PDF Document" ? (
-            <PdfViewer nativeFile={file.nativeFile} />
+            <PdfViewer nativeFile={file.nativeFile} fetchedData={file.fetchedData} />
           ) : (
             <>
               <div className="upload-icon" style={{ display: 'flex', justifyContent: 'center', width: '100%', color: 'var(--neon-blue)' }}>
