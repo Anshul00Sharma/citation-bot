@@ -1,7 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useUploadStore } from "@/store/useUploadStore";
+import { useSessionStore } from "@/store/useSessionStore";
+
+const LOADING_MESSAGES = [
+  "Initializing secure connection.",
+  "Constructing your workspace.",
+  "Engaging Citation Bot."
+];
 
 export default function UploadDropzone() {
   const [isDragging, setIsDragging] = useState(false);
@@ -9,6 +16,38 @@ export default function UploadDropzone() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { setFile } = useUploadStore();
+  const isLoading = useSessionStore((state) => state.isLoading);
+
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const currentMessage = LOADING_MESSAGES[messageIndex];
+    let timeout: NodeJS.Timeout;
+
+    if (!isDeleting && displayedText !== currentMessage) {
+      timeout = setTimeout(() => {
+        setDisplayedText(currentMessage.slice(0, displayedText.length + 1));
+      }, 50 + Math.random() * 30);
+    } else if (!isDeleting && displayedText === currentMessage) {
+      timeout = setTimeout(() => {
+        setIsDeleting(true);
+      }, 1500);
+    } else if (isDeleting && displayedText !== "") {
+      timeout = setTimeout(() => {
+        setDisplayedText(displayedText.slice(0, -1));
+      }, 25);
+    } else if (isDeleting && displayedText === "") {
+      setIsDeleting(false);
+      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+      timeout = setTimeout(() => {}, 200); 
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayedText, isDeleting, messageIndex, isLoading]);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -65,6 +104,36 @@ export default function UploadDropzone() {
       fileInputRef.current.click();
     }
   };
+
+  if (isLoading) {
+    return (
+      <div 
+        className="upload-section" 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          minHeight: '300px',
+          cursor: 'default'
+        }}
+      >
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+          }
+          .animate-blink {
+            animation: blink 1s step-end infinite;
+          }
+        `}} />
+        <div className="flex h-10 items-center justify-center font-mono text-xl font-medium tracking-tight text-zinc-800">
+          <span>{displayedText}</span>
+          <span className="animate-blink ml-[2px] h-[1em] w-[2px] bg-zinc-800"></span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 

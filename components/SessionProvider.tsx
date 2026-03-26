@@ -8,5 +8,6 @@ export default function SessionProvider({
   children: React.ReactNode;
 }) {
   useHandshake();
+
   return <>{children}</>;
 }
